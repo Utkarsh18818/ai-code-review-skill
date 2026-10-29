@@ -1,0 +1,67 @@
+name: Review Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validation:
+    name: Skill validation and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - run: python3 scripts/validate_skill.py
+      - run: python3 -m unittest discover -s tests -v
+
+  codeql:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python, actions]
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended
+      - uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
+        with:
+          output: codeql-results
+          upload: always
+          upload-database: false
+      - name: Block reported findings or missing analysis
+        run: python3 scripts/check_sarif.py codeql-results
+
+  gate:
+    name: Required Review Gate
+    if: ${{ always() }}
+    needs: [validation, codeql]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require every prerequisite to succeed
+        env:
+          VALIDATION: ${{ needs.validation.result }}
+          CODEQL: ${{ needs.codeql.result }}
+        run: |
+          if [ "$VALIDATION" != success ] || [ "$CODEQL" != success ]; then
+            echo 'Required checks failed, were cancelled, or were skipped.'
+            exit 1
+          fi
+          echo 'All required checks succeeded.'
