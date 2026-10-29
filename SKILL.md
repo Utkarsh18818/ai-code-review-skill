@@ -60,3 +60,4 @@ Provide one advisory review disposition:
 If fixes are requested, make scoped changes, rerun relevant checks, and update the findings. New revisions invalidate conclusions for affected code. Do not silently suppress findings, weaken tests, or remove scanner rules to make checks pass. Document justified false-positive suppressions narrowly with evidence.
 
 For actual merge enforcement, consult [references/enforcement.md](references/enforcement.md). Never present a local skill or agent-authored report as tamper-proof enforcement.
+[guide](deliberately-missing-enforcement-smoke-test.md)
