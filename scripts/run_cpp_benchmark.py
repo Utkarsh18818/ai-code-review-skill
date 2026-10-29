@@ -22,6 +22,16 @@ def execute(command, environment, timeout):
                           errors='replace', timeout=timeout, check=False)
 
 
+def preserve_timeout(error, phase, log_path):
+    def text(value):
+        return value.decode("utf-8", errors="replace") if isinstance(value, bytes) else (value or "")
+
+    log_path.write_text(text(error.stdout) + text(error.stderr), encoding="utf-8")
+    return {"error": f"{type(error).__name__}: {error}", "failure_phase": phase,
+            "timed_out": True, "timeout_seconds": error.timeout,
+            "diagnostic_log": log_path.name}
+
+
 def run(output, compiler):
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
@@ -54,6 +64,7 @@ def run(output, compiler):
                 record = {'case_id': case['id'], 'source': case['source'],
                           'expected_defect': case['defective'], 'build_command': command,
                           'run_command': [binary], 'verified': False}
+                phase = 'build'
                 try:
                     built = execute(command, environment, 30)
                     record['build_exit'] = built.returncode
@@ -62,6 +73,7 @@ def run(output, compiler):
                         record['error'] = 'Compilation failed; program not executed'
                         print((built.stdout + built.stderr)[-6000:], file=sys.stderr)
                     else:
+                        phase = 'run'
                         result = execute([binary], environment, 5)
                         combined = result.stdout + result.stderr
                         (output / f"{case['id']}-run.log").write_text(combined, encoding='utf-8')
@@ -70,11 +82,16 @@ def run(output, compiler):
                         if not record['verified']:
                             record['error'] = 'Observed behavior did not match expected diagnostic/clean execution'
                             print(f"{case['id']} unexpected exit {result.returncode}: {combined[-6000:]}", file=sys.stderr)
-                except (OSError, subprocess.TimeoutExpired) as error:
+                except subprocess.TimeoutExpired as error:
+                    record.update(preserve_timeout(error, phase, output / f"{case['id']}-{phase}.log"))
+                except OSError as error:
                     record['error'] = f'{type(error).__name__}: {error}'
+                    record['failure_phase'] = phase
                 report['cases'].append(record)
         report['complete'] = len(report['cases']) == len(cases)
-    except (OSError, ValueError, KeyError, TypeError, subprocess.TimeoutExpired) as error:
+    except subprocess.TimeoutExpired as error:
+        report.update(preserve_timeout(error, 'compiler-version', output / 'compiler-version.log'))
+    except (OSError, ValueError, KeyError, TypeError) as error:
         report['error'] = f'{type(error).__name__}: {error}'
     passed = report['complete'] and all(case['verified'] for case in report['cases'])
     report['passed'] = passed
