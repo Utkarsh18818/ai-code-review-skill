@@ -19,6 +19,8 @@ Produce an evidence-backed review that a maintainer can act on. Review actual be
 
 Read [references/review-checklist.md](references/review-checklist.md), selecting the sections relevant to the code. For each category, record reviewed, not applicable with reason, or not assessed with reason. Prioritize realistic impact over the number of findings.
 
+For C/C++ or native ownership/lifetime changes, also read [references/cpp-review.md](references/cpp-review.md). Trace ownership before asserting a leak, record reproducible sanitizer evidence when available, and generate behavior-based regression tests when fixes/tests are requested. Use its finding format when a detailed or structured memory-safety report would help.
+
 Trace important operations from input to validation, authorization, sensitive operation, output, and cleanup. In particular inspect:
 
 - Authentication, object/tenant authorization, privilege changes, session and token lifecycle.

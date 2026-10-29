@@ -33,7 +33,7 @@ No external service or API key is required by the instructions themselves. Runni
 
 This is a review skill, not an unbypassable security system. It cannot guarantee finding every vulnerability. Installing it in another project does not configure that project's CI or branch protections. See [enforcement guidance](references/enforcement.md).
 
-This source repository includes a `Review Gate` workflow: package validation, 12 unit tests, and CodeQL security-extended analysis for Python and GitHub Actions. `Required Review Gate` succeeds only when all prerequisites succeed. Each scanner job also rejects reported findings and missing/malformed SARIF evidence. These checks cover this repository, not code in projects that install the skill. See [security policy](SECURITY.md).
+This source repository includes a `Review Gate` workflow: package validation, unit tests, CodeQL security-extended analysis for Python and GitHub Actions, and a C++ sanitizer fixture suite. `Required Review Gate` succeeds only when all prerequisites succeed. Each scanner job also rejects reported findings and missing/malformed SARIF evidence. These checks cover this repository, not code in projects that install the skill. See [security policy](SECURITY.md).
 
 Run local checks with Python 3.10 or newer:
 
@@ -51,6 +51,14 @@ Publish this folder in a public GitHub repository, preserving LICENSE. Include e
 Contributions should include the observed review failure, a small synthetic reproduction or example, expected behavior, and any relevant environment/tool versions. Do not submit credentials, private source code, or weaponized exploits. Prefer focused improvements over instructions that force irrelevant checks on every project.
 
 The validation utilities have unit tests, including checks that missing evidence and scanner findings block the gate. The review skill itself has not been benchmarked against a representative vulnerable-code corpus. Before relying on it, evaluate known-vulnerable examples and safe controls for your stack, including prompt injection, cleanup failures, authorization bypasses, and missing scanner coverage.
+
+## C++ evidence and benchmarking
+
+For C++ reviews, the skill adds [ownership/lifetime review guidance](references/cpp-review.md), reproducible sanitizer evidence, a detailed finding format, and behavior-based regression-test guidance.
+
+The [C++ seed benchmark](benchmarks/cpp/README.md) provides twelve shuffled sources: six defects and six safe controls. It covers allocation leaks, use-after-free, buffer overflow, double free, stack lifetime, and integer overflow. A Linux runner verifies the expected ASan/LSan/UBSan behavior and preserves logs, build commands, toolchain details, and JSON outcomes as CI artifacts. Missing tools and unexpected behavior fail the required gate.
+
+A separate reviewer scorer reports missed defects and false alarms from actual model output. It withholds rates for incomplete reviews and requires per-case evidence. **Passing sanitizer verification is not an AI-review accuracy result.** No independent detection score is claimed yet; human evidence adjudication and held-out cases are required before making performance claims.
 
 ## Documentation
 

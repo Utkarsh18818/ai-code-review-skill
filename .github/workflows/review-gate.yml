@@ -48,10 +48,29 @@ jobs:
       - name: Block reported findings or missing analysis
         run: python3 scripts/check_sarif.py codeql-results
 
+  cpp-benchmark:
+    name: C++ sanitizer fixtures
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify all defect and safe-control fixtures
+        run: python3 scripts/run_cpp_benchmark.py --output benchmark-results
+      - name: Preserve compiler, commands, diagnostics, and case outcomes
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cpp-sanitizer-evidence
+          path: benchmark-results/
+          if-no-files-found: error
+          retention-days: 30
+
   gate:
     name: Required Review Gate
     if: ${{ always() }}
-    needs: [validation, codeql]
+    needs: [validation, codeql, cpp-benchmark]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
@@ -59,8 +78,9 @@ jobs:
         env:
           VALIDATION: ${{ needs.validation.result }}
           CODEQL: ${{ needs.codeql.result }}
+          CPP_BENCHMARK: ${{ needs.cpp-benchmark.result }}
         run: |
-          if [ "$VALIDATION" != success ] || [ "$CODEQL" != success ]; then
+          if [ "$VALIDATION" != success ] || [ "$CODEQL" != success ] || [ "$CPP_BENCHMARK" != success ]; then
             echo 'Required checks failed, were cancelled, or were skipped.'
             exit 1
           fi

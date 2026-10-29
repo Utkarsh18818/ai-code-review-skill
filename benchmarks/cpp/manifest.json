@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "n01",
+      "source": "cases/n01.cpp",
+      "category": "heap-use-after-free",
+      "defective": true,
+      "diagnostic": "heap-use-after-free"
+    },
+    {
+      "id": "n02",
+      "source": "cases/n02.cpp",
+      "category": "heap-buffer-overflow",
+      "defective": false,
+      "diagnostic": ""
+    },
+    {
+      "id": "n03",
+      "source": "cases/n03.cpp",
+      "category": "leak",
+      "defective": true,
+      "diagnostic": "LeakSanitizer: detected memory leaks"
+    },
+    {
+      "id": "n04",
+      "source": "cases/n04.cpp",
+      "category": "stack-use-after-scope",
+      "defective": false,
+      "diagnostic": ""
+    },
+    {
+      "id": "n05",
+      "source": "cases/n05.cpp",
+      "category": "double-free",
+      "defective": true,
+      "diagnostic": "attempting double-free"
+    },
+    {
+      "id": "n06",
+      "source": "cases/n06.cpp",
+      "category": "signed-integer-overflow",
+      "defective": false,
+      "diagnostic": ""
+    },
+    {
+      "id": "n07",
+      "source": "cases/n07.cpp",
+      "category": "stack-use-after-scope",
+      "defective": true,
+      "diagnostic": "stack-use-after-scope"
+    },
+    {
+      "id": "n08",
+      "source": "cases/n08.cpp",
+      "category": "leak",
+      "defective": false,
+      "diagnostic": ""
+    },
+    {
+      "id": "n09",
+      "source": "cases/n09.cpp",
+      "category": "signed-integer-overflow",
+      "defective": true,
+      "diagnostic": "signed integer overflow"
+    },
+    {
+      "id": "n10",
+      "source": "cases/n10.cpp",
+      "category": "heap-use-after-free",
+      "defective": false,
+      "diagnostic": ""
+    },
+    {
+      "id": "n11",
+      "source": "cases/n11.cpp",
+      "category": "heap-buffer-overflow",
+      "defective": true,
+      "diagnostic": "heap-buffer-overflow"
+    },
+    {
+      "id": "n12",
+      "source": "cases/n12.cpp",
+      "category": "double-free",
+      "defective": false,
+      "diagnostic": ""
+    }
+  ]
+}
