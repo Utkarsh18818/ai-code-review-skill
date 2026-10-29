@@ -1,8 +1,10 @@
-#include <cstddef>
-__attribute__((noinline)) void process(bool stop) {
+int main(int argc, char**) {
     int* values = new int[16];
     values[0] = 7;
-    if (stop) return;
+    if (argc > 0) {
+        values = nullptr;
+        return 0;
+    }
     delete[] values;
+    return 0;
 }
-int main() { process(true); return 0; }

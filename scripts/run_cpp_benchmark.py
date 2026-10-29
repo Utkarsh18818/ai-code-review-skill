@@ -60,6 +60,7 @@ def run(output, compiler):
                     (output / f"{case['id']}-build.log").write_text(built.stdout + built.stderr, encoding='utf-8')
                     if built.returncode:
                         record['error'] = 'Compilation failed; program not executed'
+                        print((built.stdout + built.stderr)[-6000:], file=sys.stderr)
                     else:
                         result = execute([binary], environment, 5)
                         combined = result.stdout + result.stderr
@@ -68,6 +69,7 @@ def run(output, compiler):
                         record['verified'] = classify_execution(case, result.returncode, combined)
                         if not record['verified']:
                             record['error'] = 'Observed behavior did not match expected diagnostic/clean execution'
+                            print(f"{case['id']} unexpected exit {result.returncode}: {combined[-6000:]}", file=sys.stderr)
                 except (OSError, subprocess.TimeoutExpired) as error:
                     record['error'] = f'{type(error).__name__}: {error}'
                 report['cases'].append(record)
